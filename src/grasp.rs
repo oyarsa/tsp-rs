@@ -4,7 +4,6 @@ extern crate rand;
 
 use std::f64;
 use std::time::{Duration, Instant};
-use std::cmp::Ordering::Greater;
 use self::rand::Rng;
 use grafo::{Solucao, Grafo, Caminho, Vertice, Peso};
 
@@ -32,7 +31,7 @@ fn vizinho_mais_proximo<R: Rng + Sized>(mut rng: &mut R,
             .filter(|&(_, (_, marc))| !marc)
             .map(|(vert, (&peso, _))| (vert, peso))
             .collect::<Vec<(Vertice, Peso)>>();
-        abertos.sort_by(|&(_, a), &(_, b)| a.partial_cmp(&b).unwrap_or(Greater));
+        abertos.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
 
         let num_candidatos = (abertos.len() as f64 * alfa).ceil() as usize;
         if num_candidatos == 0 {
@@ -73,16 +72,12 @@ fn two_opt_swap(grafo: &Grafo, caminho: &Caminho, i: Vertice, k: Vertice) -> Sol
 
 fn two_opt_loop(grafo: &Grafo, solucao: &Solucao) -> Option<Solucao> {
     let num_vertices = solucao.caminho().len();
-    let mut best = solucao.clone();
-
-    for i in 0..num_vertices {
-        for k in i + 1..num_vertices {
-            let nova = two_opt_swap(grafo, solucao.caminho(), i, k);
-            if nova.fo() < best.fo() {
-                best = nova;
-            }
-        }
-    }
+    let best = (0..num_vertices - 1)
+        .flat_map(|i| {
+            (i + 1..num_vertices).map(move |k| two_opt_swap(grafo, solucao.caminho(), i, k))
+        })
+        .min_by_key(Solucao::fo)
+        .unwrap_or_else(Solucao::vazia);
     if best.fo() < solucao.fo() {
         Some(best)
     } else {
@@ -90,21 +85,17 @@ fn two_opt_loop(grafo: &Grafo, solucao: &Solucao) -> Option<Solucao> {
     }
 }
 
-fn busca_local(grafo: &Grafo, solucao: Solucao, num_vizinhos: i32) -> Solucao {
-    let mut best = solucao.clone();
-    for _ in 0..num_vizinhos {
-        let vizinho = busca_local_vizinho(grafo, &solucao);
-        if vizinho.fo() < best.fo() {
-            best = vizinho;
-        }
-    }
-    best
+fn busca_local(grafo: &Grafo, solucao: Solucao, num_vizinhos: u32) -> Solucao {
+    (0..num_vizinhos)
+        .map(|_| busca_local_vizinho(grafo, &solucao))
+        .min_by_key(Solucao::fo)
+        .unwrap_or(solucao.clone())
 }
 
 pub fn grasp(grafo: &Grafo,
              alfa: f64,
              timeout: u64,
-             num_vizinhos: i32,
+             num_vizinhos: u32,
              max_iter: u64)
              -> (Solucao, u64) {
     let mut rng = rand::thread_rng();
@@ -112,10 +103,10 @@ pub fn grasp(grafo: &Grafo,
     let t = Instant::now();
 
     let mut it = 0;
-    let mut it_melhor = 0;
+    let mut it_alvo = 0;
     let mut best = Solucao::vazia();
 
-    while it - it_melhor < max_iter && t.elapsed() < timeout {
+    while it - it_alvo < max_iter && t.elapsed() < timeout {
         if it % max_iter == 0 {
             println!("i: {}", it);
         }
@@ -125,11 +116,11 @@ pub fn grasp(grafo: &Grafo,
 
         if vizinho.fo() < best.fo() {
             best = vizinho;
-            it_melhor = it;
+            it_alvo = it;
         }
 
         it += 1;
     }
 
-    (best, it_melhor)
+    (best, it_alvo)
 }

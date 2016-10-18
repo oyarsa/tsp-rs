@@ -1,14 +1,15 @@
 #![allow(ptr_arg)]
 
-pub type Peso = f64;
+pub type Peso = u64;
 pub type Vertice = usize;
 pub type Grafo = Vec<Vec<Peso>>;
 pub type Caminho = Vec<Vertice>;
 
-use std::f64;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::fs::File;
+
+const INF: u64 = 1e9 as u64;
 
 #[derive(Clone)]
 pub struct Solucao {
@@ -28,10 +29,20 @@ fn frequencias(caminho: &Caminho) -> Vec<u64> {
     freq
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
+pub fn toy() -> Grafo {
+    vec![
+        vec![0, 1, 4, 2],
+        vec![1, 0, 2, 5],
+        vec![4, 2, 0, 3],
+        vec![2, 5, 3, 0]
+    ]
+}
+
 impl Solucao {
     fn calcula_fo(grafo: &Grafo, caminho: &Caminho) -> Peso {
         if !is_factivel(caminho) {
-            return f64::INFINITY;
+            return INF;
         }
         let inicio = caminho[0];
         let fim = caminho[caminho.len() - 1];
@@ -50,7 +61,7 @@ impl Solucao {
 
     pub fn vazia() -> Solucao {
         Solucao {
-            fo: f64::INFINITY,
+            fo: INF,
             caminho: vec![],
         }
     }
@@ -72,7 +83,7 @@ pub fn grafo_from_arquivo(file: &str) -> Grafo {
         .map(|l| {
             l.expect("Failed to read line")
                 .split_whitespace()
-                .map(|number| number.parse().unwrap_or(f64::INFINITY))
+                .map(|number| number.parse().unwrap_or(INF))
                 .collect()
         })
         .collect()

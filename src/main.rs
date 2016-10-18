@@ -15,12 +15,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let grafo: Grafo = match args.len() {
-        1 => {
-            vec![vec![0.0, 1.0, 4.0, 2.0],
-                 vec![1.0, 0.0, 2.0, 5.0],
-                 vec![4.0, 2.0, 0.0, 3.0],
-                 vec![2.0, 5.0, 3.0, 0.0]]
-        }
+        1 => grafo::toy(),
         2 => grafo::grafo_from_arquivo(&args[1]),
         _ => {
             println!("Opções inválidas");
