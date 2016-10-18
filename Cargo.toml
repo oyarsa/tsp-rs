@@ -1,0 +1,8 @@
+[package]
+name = "tsp-rs"
+version = "0.0.1"
+authors = ["Italo Silva <italo@maleldil.com>"]
+
+[dependencies]
+rand = "*"
+clippy = "*"
