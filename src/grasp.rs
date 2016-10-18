@@ -5,10 +5,13 @@ extern crate rand;
 use std::f64;
 use std::time::{Duration, Instant};
 use std::cmp::Ordering::Greater;
-use self::rand::{Rng, XorShiftRng};
+use self::rand::Rng;
 use grafo::{Solucao, Grafo, Caminho, Vertice, Peso};
 
-fn vizinho_mais_proximo(mut rng: &mut XorShiftRng, grafo: &Grafo, alfa: f64) -> Option<Caminho> {
+fn vizinho_mais_proximo<R: Rng + Sized>(mut rng: &mut R,
+                                        grafo: &Grafo,
+                                        alfa: f64)
+                                        -> Option<Caminho> {
     let num_vertices = grafo.len();
     let mut caminho = Vec::with_capacity(num_vertices);
     let mut marcados = vec![false; num_vertices];
@@ -45,7 +48,7 @@ fn vizinho_mais_proximo(mut rng: &mut XorShiftRng, grafo: &Grafo, alfa: f64) -> 
     Some(caminho)
 }
 
-fn construcao(mut rng: &mut XorShiftRng, grafo: &Grafo, alfa: f64) -> Solucao {
+fn construcao<R: Rng + Sized>(mut rng: &mut R, grafo: &Grafo, alfa: f64) -> Solucao {
     loop {
         if let Some(caminho) = vizinho_mais_proximo(&mut rng, grafo, alfa) {
             return Solucao::new(grafo, caminho);
@@ -104,7 +107,7 @@ pub fn grasp(grafo: &Grafo,
              num_vizinhos: i32,
              max_iter: u64)
              -> (Solucao, u64) {
-    let mut rng = rand::weak_rng();
+    let mut rng = rand::thread_rng();
     let timeout = Duration::from_secs(timeout);
     let t = Instant::now();
 

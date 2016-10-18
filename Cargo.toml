@@ -1,7 +1,18 @@
 [package]
 name = "tsp-rs"
+description = "Algoritmos para resolução do TSP em Rust"
 version = "0.0.1"
 authors = ["Italo Silva <italo@maleldil.com>"]
+repository = "https://github.com/oyarsa/tsp-rs"
+homepage = "https://github.com/oyarsa/tsp-rs"
+readme = "README.md"
+keywords = ["tsp", "heuristics", "grasp"]
+license = "MIT"
+
+[[bin]]
+bench = false
+path = "src/main.rs"
+name = "tsp"
 
 [dependencies]
 rand = "*"
