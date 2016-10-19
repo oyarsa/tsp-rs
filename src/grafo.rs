@@ -9,7 +9,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::fs::File;
 
-const INF: u64 = 1e9 as u64;
+pub const INF: u64 = 1e9 as u64;
 
 #[derive(Clone)]
 pub struct Solucao {
@@ -23,7 +23,7 @@ fn is_factivel(caminho: &Caminho) -> bool {
 
 fn frequencias(caminho: &Caminho) -> Vec<u64> {
     let mut freq = vec![0u64; caminho.len()];
-    for &vert in caminho.iter() {
+    for &vert in caminho {
         freq[vert] += 1;
     }
     freq
@@ -59,6 +59,7 @@ impl Solucao {
         }
     }
 
+    #[allow(dead_code)]
     pub fn vazia() -> Solucao {
         Solucao {
             fo: INF,
@@ -68,6 +69,10 @@ impl Solucao {
 
     pub fn caminho(&self) -> &Caminho {
         &self.caminho
+    }
+
+    pub fn caminho_owned(self) -> Caminho {
+        self.caminho
     }
 
     pub fn fo(&self) -> Peso {

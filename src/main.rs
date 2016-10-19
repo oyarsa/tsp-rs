@@ -3,13 +3,44 @@
 
 mod grasp;
 mod grafo;
+mod ag;
 
 use std::env;
 use std::process;
 use std::time::Instant;
-use std::u64;
 use grafo::Grafo;
-use grasp::grasp;
+use grasp::GraspConfig;
+use ag::Ag;
+
+fn teste_grasp(grafo: &Grafo) {
+    println!("Grasp");
+    let t = Instant::now();
+    let (solucao, it) = GraspConfig::new(grafo).max_iter(grafo::INF).timeout(10).build().solve();
+    let tempo = t.elapsed();
+
+    println!("Caminho: {:?}", solucao.caminho());
+    println!("Iteração alvo: {}", it);
+    println!("Fo: {}", solucao.fo());
+    println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
+}
+
+fn teste_ag(grafo: &Grafo) {
+    println!("AG");
+    let t = Instant::now();
+    let (solucao, it) = Ag::new(grafo.clone())
+        .max_iter(grafo::INF)
+        .timeout(10)
+        .mut_chance(0.1)
+        .pop_tam(300)
+        .xo_chance(1.0)
+        .solve();
+    let tempo = t.elapsed();
+
+    println!("Caminho: {:?}", solucao.caminho());
+    println!("Iteração alvo: {}", it);
+    println!("Fo: {}", solucao.fo());
+    println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -23,12 +54,6 @@ fn main() {
         }
     };
 
-    let t = Instant::now();
-    let (solucao, it) = grasp(&grafo, 0.35, u64::MAX, 10, 40);
-    let tempo = t.elapsed();
-
-    println!("Caminho: {:?}", solucao.caminho());
-    println!("Iteração alvo: {}", it);
-    println!("Fo: {}", solucao.fo());
-    println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
+    teste_ag(&grafo);
+    teste_grasp(&grafo);
 }

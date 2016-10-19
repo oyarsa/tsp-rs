@@ -1,126 +1,184 @@
 #![allow(ptr_arg)]
+#![allow(dead_code)]
 
 extern crate rand;
 
-use std::f64;
+use std::u64;
 use std::time::{Duration, Instant};
 use self::rand::Rng;
-use grafo::{Solucao, Grafo, Caminho, Vertice, Peso};
+use grafo::{Solucao, Grafo, Caminho, Vertice};
 
-fn vizinho_mais_proximo<R: Rng + Sized>(mut rng: &mut R,
-                                        grafo: &Grafo,
-                                        alfa: f64)
-                                        -> Option<Caminho> {
-    let num_vertices = grafo.len();
-    let mut caminho = Vec::with_capacity(num_vertices);
-    let mut marcados = vec![false; num_vertices];
-    let mut num_marcados = 0;
+pub struct Grasp<'a> {
+    grafo: &'a Grafo,
+    alfa: f64,
+    timeout: Duration,
+    num_vizinhos: u32,
+    max_iter: u64,
+}
 
-    let inicial = rng.gen::<Vertice>() % num_vertices;
-    caminho.push(inicial);
-    marcados[inicial] = true;
-    num_marcados += 1;
+impl<'a> Grasp<'a> {
+    pub fn solve(&self) -> (Solucao, u64) {
+        let mut rng = rand::weak_rng();
+        let t = Instant::now();
 
-    while num_marcados < num_vertices {
-        let atual = caminho[caminho.len() - 1];
-        let adjacentes = &grafo[atual];
+        let mut it = 0;
+        let mut it_alvo = 0;
+        let mut best = Solucao::vazia();
 
-        let mut abertos = adjacentes.iter()
-            .zip(marcados.iter())
-            .enumerate()
-            .filter(|&(_, (_, marc))| !marc)
-            .map(|(vert, (&peso, _))| (vert, peso))
-            .collect::<Vec<(Vertice, Peso)>>();
-        abertos.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
+        while it - it_alvo < self.max_iter && t.elapsed() < self.timeout {
+            if it % self.max_iter == 0 {
+                println!("i: {}", it);
+            }
 
-        let num_candidatos = (abertos.len() as f64 * alfa).ceil() as usize;
-        if num_candidatos == 0 {
-            return None;
+            let atual = self.construcao(&mut rng);
+            let vizinho = self.busca_local(atual);
+
+            if vizinho.fo() < best.fo() {
+                best = vizinho;
+                it_alvo = it;
+            }
+
+            it += 1;
         }
 
-        let (proximo, _) = abertos[rng.gen::<Vertice>() % num_candidatos];
-        caminho.push(proximo);
-        marcados[proximo] = true;
+        (best, it_alvo)
+    }
+
+    fn vizinho_mais_proximo<R: Rng + Sized>(&self, mut rng: &mut R) -> Option<Caminho> {
+        let num_vertices = self.grafo.len();
+        let mut caminho = Vec::with_capacity(num_vertices);
+        let mut marcados = vec![false; num_vertices];
+        let mut num_marcados = 0;
+
+        let inicial = rng.gen::<Vertice>() % num_vertices;
+        caminho.push(inicial);
+        marcados[inicial] = true;
         num_marcados += 1;
-    }
 
-    Some(caminho)
-}
+        while num_marcados < num_vertices {
+            let atual = caminho[caminho.len() - 1];
+            let adjacentes = &self.grafo[atual];
 
-fn construcao<R: Rng + Sized>(mut rng: &mut R, grafo: &Grafo, alfa: f64) -> Solucao {
-    loop {
-        if let Some(caminho) = vizinho_mais_proximo(&mut rng, grafo, alfa) {
-            return Solucao::new(grafo, caminho);
-        }
-    }
-}
+            let mut abertos = adjacentes.iter()
+                .zip(marcados.iter())
+                .enumerate()
+                .filter(|&(_, (_, marc))| !marc)
+                .map(|(vert, (&peso, _))| (vert, peso))
+                .collect::<Vec<_>>();
+            abertos.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
 
-fn busca_local_vizinho(grafo: &Grafo, solucao: &Solucao) -> Solucao {
-    let mut atual = solucao.clone();
-    while let Some(nova) = two_opt_loop(grafo, &atual) {
-        atual = nova;
-    }
-    atual
-}
+            let num_candidatos = (abertos.len() as f64 * self.alfa).ceil() as usize;
+            if num_candidatos == 0 {
+                return None;
+            }
 
-fn two_opt_swap(grafo: &Grafo, caminho: &Caminho, i: Vertice, k: Vertice) -> Solucao {
-    let mut novo = caminho.clone();
-    novo[i..k].reverse();
-
-    Solucao::new(grafo, novo)
-}
-
-fn two_opt_loop(grafo: &Grafo, solucao: &Solucao) -> Option<Solucao> {
-    let num_vertices = solucao.caminho().len();
-    let best = (0..num_vertices - 1)
-        .flat_map(|i| {
-            (i + 1..num_vertices).map(move |k| two_opt_swap(grafo, solucao.caminho(), i, k))
-        })
-        .min_by_key(Solucao::fo)
-        .unwrap_or_else(Solucao::vazia);
-    if best.fo() < solucao.fo() {
-        Some(best)
-    } else {
-        None
-    }
-}
-
-fn busca_local(grafo: &Grafo, solucao: Solucao, num_vizinhos: u32) -> Solucao {
-    (0..num_vizinhos)
-        .map(|_| busca_local_vizinho(grafo, &solucao))
-        .min_by_key(Solucao::fo)
-        .unwrap_or(solucao.clone())
-}
-
-pub fn grasp(grafo: &Grafo,
-             alfa: f64,
-             timeout: u64,
-             num_vizinhos: u32,
-             max_iter: u64)
-             -> (Solucao, u64) {
-    let mut rng = rand::thread_rng();
-    let timeout = Duration::from_secs(timeout);
-    let t = Instant::now();
-
-    let mut it = 0;
-    let mut it_alvo = 0;
-    let mut best = Solucao::vazia();
-
-    while it - it_alvo < max_iter && t.elapsed() < timeout {
-        if it % max_iter == 0 {
-            println!("i: {}", it);
+            let (proximo, _) = abertos[rng.gen::<Vertice>() % num_candidatos];
+            caminho.push(proximo);
+            marcados[proximo] = true;
+            num_marcados += 1;
         }
 
-        let atual = construcao(&mut rng, grafo, alfa);
-        let vizinho = busca_local(grafo, atual, num_vizinhos);
-
-        if vizinho.fo() < best.fo() {
-            best = vizinho;
-            it_alvo = it;
-        }
-
-        it += 1;
+        Some(caminho)
     }
 
-    (best, it_alvo)
+    fn construcao<R: Rng + Sized>(&self, mut rng: &mut R) -> Solucao {
+        loop {
+            if let Some(caminho) = self.vizinho_mais_proximo(&mut rng) {
+                return Solucao::new(self.grafo, caminho);
+            }
+        }
+    }
+    fn busca_local_vizinho(&self, solucao: &Solucao) -> Solucao {
+        let mut atual = solucao.clone();
+        while let Some(nova) = self.two_opt_loop(&atual) {
+            atual = nova;
+        }
+        atual
+    }
+
+    fn two_opt_swap(&self, mut caminho: Caminho, i: Vertice, k: Vertice) -> Solucao {
+        caminho[i..k].reverse();
+        Solucao::new(self.grafo, caminho)
+    }
+
+    fn two_opt_loop(&self, solucao: &Solucao) -> Option<Solucao> {
+        let num_vertices = solucao.caminho().len();
+        let mut best = solucao.clone();
+
+        for i in 0..num_vertices - 1 {
+            for k in i + 1..num_vertices {
+                let nova = self.two_opt_swap(solucao.caminho().clone(), i, k);
+                if nova.fo() < best.fo() {
+                    best = nova;
+                }
+            }
+        }
+
+        if best.fo() < solucao.fo() {
+            Some(best)
+        } else {
+            None
+        }
+    }
+
+    fn busca_local(&self, s: Solucao) -> Solucao {
+        (0..self.num_vizinhos)
+            .map(|_| self.busca_local_vizinho(&s))
+            .min_by_key(Solucao::fo)
+            .unwrap_or(s)
+    }
+}
+
+pub struct GraspConfig<'a> {
+    grafo: &'a Grafo,
+    alfa: f64,
+    timeout: u64,
+    num_vizinhos: u32,
+    max_iter: u64,
+}
+
+impl<'a> GraspConfig<'a> {
+    pub fn new(grafo: &Grafo) -> GraspConfig {
+        GraspConfig {
+            grafo: grafo,
+            alfa: 0.35,
+            timeout: u64::MAX,
+            num_vizinhos: 10,
+            max_iter: 40,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn alfa(&'a mut self, alfa: f64) -> &mut GraspConfig {
+        self.alfa = alfa;
+        self
+    }
+
+    #[allow(dead_code)]
+    pub fn timeout(&'a mut self, timeout: u64) -> &mut GraspConfig {
+        self.timeout = timeout;
+        self
+    }
+
+    #[allow(dead_code)]
+    pub fn num_vizinhos(&'a mut self, num_vizinhos: u32) -> &mut GraspConfig {
+        self.num_vizinhos = num_vizinhos;
+        self
+    }
+
+    #[allow(dead_code)]
+    pub fn max_iter(&'a mut self, max_iter: u64) -> &mut GraspConfig {
+        self.max_iter = max_iter;
+        self
+    }
+
+    pub fn build(&self) -> Grasp<'a> {
+        Grasp {
+            grafo: self.grafo,
+            alfa: self.alfa,
+            timeout: Duration::from_secs(self.timeout),
+            num_vizinhos: self.num_vizinhos,
+            max_iter: self.max_iter,
+        }
+    }
 }
