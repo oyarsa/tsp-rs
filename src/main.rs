@@ -18,7 +18,7 @@ use ag::Ag;
 fn teste_grasp(grafo: &Grafo) {
     println!("Grasp");
     let t = Instant::now();
-    let (solucao, it) = GraspConfig::new(grafo).max_iter(INF).timeout(10).build().solve();
+    let (solucao, it) = GraspConfig::new(grafo).max_iter(40).timeout(INF).build().solve();
     let tempo = t.elapsed();
 
     println!("Caminho: {:?}", solucao.caminho());
@@ -31,7 +31,7 @@ fn teste_grasp(grafo: &Grafo) {
 fn teste_ag(grafo: &Grafo) {
     println!("AG");
     let t = Instant::now();
-    let (solucao, it) = Ag::new(grafo.clone())
+    let (solucao, it) = Ag::new(grafo)
         .max_iter(100)
         .timeout(INF)
         .mut_chance(0.3)
@@ -59,5 +59,6 @@ fn main() {
         }
     };
 
-    teste_ag(&grafo);
+    // teste_ag(&grafo);
+    teste_grasp(&grafo);
 }

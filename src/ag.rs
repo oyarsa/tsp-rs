@@ -253,8 +253,8 @@ fn mutacao(caminho: Caminho, mut_chance: f64) -> Caminho {
     }
 }
 
-pub struct Ag {
-    grafo: Grafo,
+pub struct Ag<'a> {
+    grafo: &'a Grafo,
     timeout: u64,
     max_iter: u64,
     pop_tam: usize,
@@ -262,8 +262,8 @@ pub struct Ag {
     mut_chance: f64,
 }
 
-impl Ag {
-    pub fn new(grafo: Grafo) -> Ag {
+impl<'a> Ag<'a> {
+    pub fn new(grafo: &Grafo) -> Ag {
         Ag {
             grafo: grafo,
             timeout: u64::MAX,
@@ -275,7 +275,7 @@ impl Ag {
     }
 
     pub fn solve(&self) -> (Solucao, u64) {
-        solve(&self.grafo,
+        solve(self.grafo,
               Duration::from_secs(self.timeout),
               self.max_iter,
               self.pop_tam,
@@ -284,31 +284,31 @@ impl Ag {
     }
 
     #[allow(dead_code)]
-    pub fn timeout(mut self, timeout: u64) -> Ag {
+    pub fn timeout(mut self, timeout: u64) -> Ag<'a> {
         self.timeout = timeout;
         self
     }
 
     #[allow(dead_code)]
-    pub fn max_iter(mut self, max_iter: u64) -> Ag {
+    pub fn max_iter(mut self, max_iter: u64) -> Ag<'a> {
         self.max_iter = max_iter;
         self
     }
 
     #[allow(dead_code)]
-    pub fn pop_tam(mut self, pop_tam: usize) -> Ag {
+    pub fn pop_tam(mut self, pop_tam: usize) -> Ag<'a> {
         self.pop_tam = pop_tam;
         self
     }
 
     #[allow(dead_code)]
-    pub fn xo_chance(mut self, xo_chance: f64) -> Ag {
+    pub fn xo_chance(mut self, xo_chance: f64) -> Ag<'a> {
         self.xo_chance = xo_chance;
         self
     }
 
     #[allow(dead_code)]
-    pub fn mut_chance(mut self, mut_chance: f64) -> Ag {
+    pub fn mut_chance(mut self, mut_chance: f64) -> Ag<'a> {
         self.mut_chance = mut_chance;
         self
     }
