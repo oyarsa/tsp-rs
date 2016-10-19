@@ -1,6 +1,3 @@
-#![allow(ptr_arg)]
-#![allow(dead_code)]
-
 extern crate rand;
 
 use std::u64;
@@ -17,6 +14,7 @@ pub struct Grasp<'a> {
 }
 
 impl<'a> Grasp<'a> {
+    #[allow(dead_code)]
     pub fn solve(&self) -> (Solucao, u64) {
         let mut rng = rand::weak_rng();
         let t = Instant::now();
@@ -44,6 +42,7 @@ impl<'a> Grasp<'a> {
         (best, it_alvo)
     }
 
+    #[allow(dead_code)]
     fn vizinho_mais_proximo<R: Rng + Sized>(&self, mut rng: &mut R) -> Option<Caminho> {
         let num_vertices = self.grafo.len();
         let mut caminho = Vec::with_capacity(num_vertices);
@@ -81,6 +80,7 @@ impl<'a> Grasp<'a> {
         Some(caminho)
     }
 
+    #[allow(dead_code)]
     fn construcao<R: Rng + Sized>(&self, mut rng: &mut R) -> Solucao {
         loop {
             if let Some(caminho) = self.vizinho_mais_proximo(&mut rng) {
@@ -101,6 +101,7 @@ impl<'a> Grasp<'a> {
         Solucao::new(self.grafo, caminho)
     }
 
+    #[allow(dead_code)]
     fn two_opt_loop(&self, solucao: &Solucao) -> Option<Solucao> {
         let num_vertices = solucao.caminho().len();
         let mut best = solucao.clone();
@@ -121,6 +122,7 @@ impl<'a> Grasp<'a> {
         }
     }
 
+    #[allow(dead_code)]
     fn busca_local(&self, s: Solucao) -> Solucao {
         (0..self.num_vizinhos)
             .map(|_| self.busca_local_vizinho(&s))
@@ -138,6 +140,7 @@ pub struct GraspConfig<'a> {
 }
 
 impl<'a> GraspConfig<'a> {
+    #[allow(dead_code)]
     pub fn new(grafo: &Grafo) -> GraspConfig {
         GraspConfig {
             grafo: grafo,
@@ -172,6 +175,7 @@ impl<'a> GraspConfig<'a> {
         self
     }
 
+    #[allow(dead_code)]
     pub fn build(&self) -> Grasp<'a> {
         Grasp {
             grafo: self.grafo,

@@ -1,17 +1,13 @@
-#![allow(ptr_arg)]
-#![allow(dead_code)]
-
 extern crate rand;
 
 use std::u64;
 use std::time::{Duration, Instant};
-use self::rand::Rng;
-use std::cmp::{max, min};
+use self::rand::{Rng, sample};
+use std::cmp::{min, max};
 use grafo::{Solucao, Grafo, Caminho, Vertice, Peso};
 use grafo;
 
 type Populacao = Vec<Solucao>;
-
 
 pub fn solve(grafo: &Grafo,
              timeout: Duration,
@@ -38,7 +34,6 @@ pub fn solve(grafo: &Grafo,
         if pop[0].fo() < best_fo {
             it_melhor = it;
             best_fo = pop[0].fo();
-            println!("Fo: {}", best_fo);
         }
         it += 1;
     }
@@ -143,8 +138,10 @@ fn two_opt_aleatorio(mut caminho: Caminho) -> Caminho {
 
 fn gen_points(num_vertices: usize) -> (Vertice, Vertice) {
     let mut rng = rand::thread_rng();
-    let i = rng.gen::<Vertice>() % num_vertices;
-    let j = rng.gen::<Vertice>() % num_vertices;
+
+    let r = sample(&mut rng, 0..num_vertices, 2);
+    let i = r[0];
+    let j = r[1];
 
     (min(i, j), max(i, j))
 }
@@ -160,6 +157,7 @@ fn gen_pmx_points(num_vertices: usize) -> (Vertice, Vertice) {
     (i, j)
 }
 
+#[allow(dead_code)]
 fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
     let num_vertices = grafo.len();
 
@@ -242,6 +240,7 @@ fn recombinacao(grafo: &Grafo, pais: Vec<(&Solucao, &Solucao)>, mut_chance: f64)
         .collect()
 }
 
+#[allow(dead_code)]
 fn swap_vertices(mut caminho: Caminho) -> Caminho {
     let (i, j) = gen_points(caminho.len());
     caminho.swap(i, j);

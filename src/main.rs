@@ -1,6 +1,8 @@
 #![feature(plugin)]
 #![plugin(clippy)]
 
+#![allow(ptr_arg)]
+
 mod grasp;
 mod grafo;
 mod ag;
@@ -12,6 +14,7 @@ use grafo::Grafo;
 use grasp::GraspConfig;
 use ag::Ag;
 
+#[allow(dead_code)]
 fn teste_grasp(grafo: &Grafo) {
     println!("Grasp");
     let t = Instant::now();
@@ -22,6 +25,7 @@ fn teste_grasp(grafo: &Grafo) {
     println!("Iteração alvo: {}", it);
     println!("Fo: {}", solucao.fo());
     println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
+    println!("-------------------\n");
 }
 
 fn teste_ag(grafo: &Grafo) {
@@ -29,9 +33,9 @@ fn teste_ag(grafo: &Grafo) {
     let t = Instant::now();
     let (solucao, it) = Ag::new(grafo.clone())
         .max_iter(grafo::INF)
-        .timeout(10)
-        .mut_chance(0.1)
-        .pop_tam(300)
+        .timeout(5)
+        .mut_chance(0.3)
+        .pop_tam(1000)
         .xo_chance(1.0)
         .solve();
     let tempo = t.elapsed();
@@ -40,6 +44,7 @@ fn teste_ag(grafo: &Grafo) {
     println!("Iteração alvo: {}", it);
     println!("Fo: {}", solucao.fo());
     println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
+    println!("-------------------\n");
 }
 
 fn main() {
@@ -55,5 +60,6 @@ fn main() {
     };
 
     teste_ag(&grafo);
-    teste_grasp(&grafo);
+    teste_ag(&grafo);
+    teste_ag(&grafo);
 }

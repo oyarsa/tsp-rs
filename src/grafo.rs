@@ -1,5 +1,3 @@
-#![allow(ptr_arg)]
-
 pub type Peso = u64;
 pub type Vertice = usize;
 pub type Grafo = Vec<Vec<Peso>>;
