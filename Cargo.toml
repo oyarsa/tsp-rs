@@ -1,5 +1,5 @@
 [package]
-name = "tsp-rs"
+name = "tsp_rs"
 description = "Algoritmos para resolução do TSP em Rust"
 version = "0.0.1"
 authors = ["Italo Silva <italo@maleldil.com>"]

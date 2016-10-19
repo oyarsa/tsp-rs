@@ -4,7 +4,7 @@ use std::u64;
 use std::time::{Duration, Instant};
 use self::rand::{Rng, sample};
 use std::cmp::{min, max};
-use grafo::{Solucao, Grafo, Caminho, Vertice, Peso};
+use grafo::{Solucao, Grafo, Caminho, Vertice};
 use grafo;
 
 type Populacao = Vec<Solucao>;
@@ -42,10 +42,10 @@ pub fn solve(grafo: &Grafo,
 }
 
 fn gen_roleta(pop: &Populacao) -> Vec<f32> {
-    let total = pop.iter().map(|s| s.fo()).sum::<Peso>();
+    let total = pop.iter().map(|s| 1.0 / s.fo() as f32).sum::<f32>();
     pop.iter()
         .scan(0.0, |state, prob| {
-            *state += prob.fo() as f32 / total as f32;
+            *state += prob.fo() as f32 / total;
             Some(*state)
         })
         .collect()
@@ -200,8 +200,8 @@ fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
     Solucao::new(grafo, filho)
 }
 
-fn ordered_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
-    let num_vertices = grafo.len();
+fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
+    let num_vertices = pai1.len();
 
     let mut filho = vec![None; num_vertices];
     let mut marcados = vec![false; num_vertices];
@@ -227,16 +227,16 @@ fn ordered_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
         }
     }
 
-    let filho = filho.into_iter().map(|o| o.unwrap()).collect::<Caminho>();
-    Solucao::new(grafo, filho)
+    filho.into_iter().map(|o| o.unwrap()).collect::<Caminho>()
 }
 
 fn recombinacao(grafo: &Grafo, pais: Vec<(&Solucao, &Solucao)>, mut_chance: f64) -> Populacao {
     pais.iter()
-        .map(|&(pai1, pai2)| ordered_crossover(grafo, pai1.caminho(), pai2.caminho()))
+        .map(|&(pai1, pai2)| ordered_crossover(pai1.caminho(), pai2.caminho()))
         .chain(pais.iter()
-            .map(|&(pai2, pai1)| ordered_crossover(grafo, pai2.caminho(), pai1.caminho())))
-        .map(|s| mutacao(grafo, s, mut_chance))
+            .map(|&(pai2, pai1)| ordered_crossover(pai2.caminho(), pai1.caminho())))
+        .map(|c| mutacao(c, mut_chance))
+        .map(|c| Solucao::new(grafo, c))
         .collect()
 }
 
@@ -247,13 +247,12 @@ fn swap_vertices(mut caminho: Caminho) -> Caminho {
     caminho
 }
 
-fn mutacao(grafo: &Grafo, solucao: Solucao, mut_chance: f64) -> Solucao {
+fn mutacao(caminho: Caminho, mut_chance: f64) -> Caminho {
     if rand::thread_rng().gen::<f64>() < mut_chance {
-        // let novo = swap_vertices(solucao.caminho_owned());
-        let novo = two_opt_aleatorio(solucao.caminho_owned());
-        Solucao::new(grafo, novo)
+        // swap_vertices(caminho);
+        two_opt_aleatorio(caminho)
     } else {
-        solucao
+        caminho
     }
 }
 

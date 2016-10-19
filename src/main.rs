@@ -10,7 +10,7 @@ mod ag;
 use std::env;
 use std::process;
 use std::time::Instant;
-use grafo::Grafo;
+use grafo::{Grafo, INF};
 use grasp::GraspConfig;
 use ag::Ag;
 
@@ -18,7 +18,7 @@ use ag::Ag;
 fn teste_grasp(grafo: &Grafo) {
     println!("Grasp");
     let t = Instant::now();
-    let (solucao, it) = GraspConfig::new(grafo).max_iter(grafo::INF).timeout(10).build().solve();
+    let (solucao, it) = GraspConfig::new(grafo).max_iter(INF).timeout(10).build().solve();
     let tempo = t.elapsed();
 
     println!("Caminho: {:?}", solucao.caminho());
@@ -32,8 +32,8 @@ fn teste_ag(grafo: &Grafo) {
     println!("AG");
     let t = Instant::now();
     let (solucao, it) = Ag::new(grafo.clone())
-        .max_iter(grafo::INF)
-        .timeout(5)
+        .max_iter(100)
+        .timeout(INF)
         .mut_chance(0.3)
         .pop_tam(1000)
         .xo_chance(1.0)
@@ -59,7 +59,5 @@ fn main() {
         }
     };
 
-    teste_ag(&grafo);
-    teste_ag(&grafo);
     teste_ag(&grafo);
 }

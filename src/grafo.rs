@@ -69,10 +69,6 @@ impl Solucao {
         &self.caminho
     }
 
-    pub fn caminho_owned(self) -> Caminho {
-        self.caminho
-    }
-
     pub fn fo(&self) -> Peso {
         self.fo
     }
