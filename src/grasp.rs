@@ -44,7 +44,7 @@ impl<'a> Grasp<'a> {
 
     #[allow(dead_code)]
     fn vizinho_mais_proximo<R: Rng + Sized>(&self, mut rng: &mut R) -> Option<Caminho> {
-        let num_vertices = self.grafo.len();
+        let num_vertices = self.grafo.num_vertices();
         let mut caminho = Vec::with_capacity(num_vertices);
         let mut marcados = vec![false; num_vertices];
         let mut num_marcados = 0;
@@ -56,13 +56,11 @@ impl<'a> Grasp<'a> {
 
         while num_marcados < num_vertices {
             let atual = caminho[caminho.len() - 1];
-            let adjacentes = &self.grafo[atual];
-
-            let mut abertos = adjacentes.iter()
+            let mut abertos = self.grafo
+                .adjacentes(atual)
                 .zip(marcados.iter())
-                .enumerate()
-                .filter(|&(_, (_, marc))| !marc)
-                .map(|(vert, (&peso, _))| (vert, peso))
+                .filter(|&((_, _), marc)| !marc)
+                .map(|((vert, &peso), _)| (vert, peso))
                 .collect::<Vec<_>>();
             abertos.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
 

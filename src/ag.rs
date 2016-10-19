@@ -96,7 +96,7 @@ fn individuo_aleatorio(grafo: &Grafo) -> Solucao {
 
 fn caminho_aleatorio(grafo: &Grafo) -> Option<Caminho> {
     let mut rng = rand::thread_rng();
-    let num_vertices = grafo.len();
+    let num_vertices = grafo.num_vertices();
     let mut caminho = Vec::with_capacity(num_vertices);
     let mut marcados = vec![false; num_vertices];
     let mut num_marcados = 0;
@@ -108,13 +108,10 @@ fn caminho_aleatorio(grafo: &Grafo) -> Option<Caminho> {
 
     while num_marcados < num_vertices {
         let atual = caminho[caminho.len() - 1];
-        let adjacentes = &grafo[atual];
-
-        let abertos = adjacentes.iter()
+        let abertos = grafo.adjacentes(atual)
             .zip(marcados.iter())
-            .enumerate()
-            .filter(|&(_, (&peso, marc))| !marc && peso != grafo::INF)
-            .map(|(vert, _)| vert)
+            .filter(|&((_, &peso), marc)| !marc && peso != grafo::INF)
+            .map(|((vert, _), _)| vert)
             .collect::<Vec<_>>();
 
         if abertos.is_empty() {
@@ -159,7 +156,7 @@ fn gen_pmx_points(num_vertices: usize) -> (Vertice, Vertice) {
 
 #[allow(dead_code)]
 fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
-    let num_vertices = grafo.len();
+    let num_vertices = grafo.num_vertices();
 
     let mut filho = vec![None; num_vertices];
     let mut marcados = vec![false; num_vertices];
@@ -196,7 +193,7 @@ fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
         }
     }
 
-    let filho = filho.into_iter().map(|o| o.unwrap()).collect::<Vec<_>>();
+    let filho = filho.into_iter().map(|o| o.unwrap()).collect();
     Solucao::new(grafo, filho)
 }
 
@@ -227,7 +224,7 @@ fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
         }
     }
 
-    filho.into_iter().map(|o| o.unwrap()).collect::<Caminho>()
+    filho.into_iter().map(|o| o.unwrap()).collect()
 }
 
 fn recombinacao(grafo: &Grafo, pais: Vec<(&Solucao, &Solucao)>, mut_chance: f64) -> Populacao {

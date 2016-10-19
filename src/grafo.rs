@@ -1,13 +1,33 @@
-pub type Peso = u64;
-pub type Vertice = usize;
-pub type Grafo = Vec<Vec<Peso>>;
-pub type Caminho = Vec<Vertice>;
-
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::fs::File;
+use std::iter::Enumerate;
+use std::slice::Iter;
 
 pub const INF: u64 = 1e9 as u64;
+
+pub type Peso = u64;
+pub type Vertice = usize;
+// pub type Grafo = Vec<Vec<Peso>>;
+pub type Caminho = Vec<Vertice>;
+
+#[derive(Clone)]
+pub struct Grafo(Vec<Vec<Peso>>);
+
+impl Grafo {
+    pub fn num_vertices(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn adjacentes(&self, vertice: Vertice) -> Enumerate<Iter<u64>> {
+        self.0[vertice].iter().enumerate()
+    }
+
+    pub fn distancia(&self, src: Vertice, dst: Vertice) -> Peso {
+        self.0[src][dst]
+    }
+}
+
 
 #[derive(Clone)]
 pub struct Solucao {
@@ -29,12 +49,12 @@ fn frequencias(caminho: &Caminho) -> Vec<u64> {
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn toy() -> Grafo {
-    vec![
+    Grafo(vec![
         vec![0, 1, 4, 2],
         vec![1, 0, 2, 5],
         vec![4, 2, 0, 3],
         vec![2, 5, 3, 0]
-    ]
+    ])
 }
 
 impl Solucao {
@@ -46,8 +66,8 @@ impl Solucao {
         let fim = caminho[caminho.len() - 1];
         caminho.iter()
             .zip(&caminho[1..])
-            .map(|(&src, &dst)| grafo[src][dst])
-            .sum::<Peso>() + grafo[fim][inicio]
+            .map(|(&src, &dst)| grafo.distancia(src, dst))
+            .sum::<Peso>() + grafo.distancia(fim, inicio)
     }
 
     pub fn new(grafo: &Grafo, caminho: Caminho) -> Solucao {
@@ -78,14 +98,14 @@ pub fn grafo_from_arquivo(file: &str) -> Grafo {
     let path = Path::new(file);
     let file = BufReader::new(File::open(&path).expect("Failed to open file"));
 
-    file.lines()
+    Grafo(file.lines()
         .map(|l| {
             l.expect("Failed to read line")
                 .split_whitespace()
                 .map(|number| number.parse().unwrap_or(INF))
                 .collect()
         })
-        .collect()
+        .collect())
 }
 
 #[allow(dead_code)]

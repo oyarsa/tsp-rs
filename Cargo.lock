@@ -1,5 +1,5 @@
 [root]
-name = "tsp-rs"
+name = "tsp_rs"
 version = "0.0.1"
 dependencies = [
  "clippy 0.0.95 (registry+https://github.com/rust-lang/crates.io-index)",
