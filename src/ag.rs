@@ -64,16 +64,18 @@ fn get_index_from_roleta(roleta: &[f32]) -> usize {
     0
 }
 
+#[allow(dead_code)]
+fn seleciona_pais<'a>(pop: &'a Populacao, roleta: &[f32]) -> (&'a Caminho, &'a Caminho) {
+    let pai1 = pop[get_index_from_roleta(roleta)].caminho();
+    let pai2 = pop[get_index_from_roleta(roleta)].caminho();
+    (pai1, pai2)
+}
 
 #[allow(dead_code)]
-fn selecao(pop: &Populacao, xo_num: usize) -> Vec<(&Solucao, &Solucao)> {
+fn selecao(pop: &Populacao, xo_num: usize) -> Vec<(&Caminho, &Caminho)> {
     let roleta = gen_roleta(pop);
     (0..xo_num)
-        .map(|_| {
-            let pai1 = &pop[get_index_from_roleta(&roleta)];
-            let pai2 = &pop[get_index_from_roleta(&roleta)];
-            (pai1, pai2)
-        })
+        .map(|_| seleciona_pais(pop, &roleta))
         .collect()
 }
 
@@ -241,11 +243,11 @@ fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
 }
 
 #[allow(dead_code)]
-fn recombinacao(grafo: &Grafo, pais: Vec<(&Solucao, &Solucao)>, mut_chance: f64) -> Populacao {
+fn recombinacao(grafo: &Grafo, pais: Vec<(&Caminho, &Caminho)>, mut_chance: f64) -> Populacao {
     pais.iter()
-        .map(|&(pai1, pai2)| ordered_crossover(pai1.caminho(), pai2.caminho()))
+        .map(|&(pai1, pai2)| ordered_crossover(pai1, pai2))
         .chain(pais.iter()
-            .map(|&(pai2, pai1)| ordered_crossover(pai2.caminho(), pai1.caminho())))
+            .map(|&(pai2, pai1)| ordered_crossover(pai2, pai1)))
         .map(|c| mutacao(c, mut_chance))
         .map(|c| Solucao::new(grafo, c))
         .collect()
@@ -261,8 +263,8 @@ fn swap_vertices(mut caminho: Caminho) -> Caminho {
 #[allow(dead_code)]
 fn mutacao(caminho: Caminho, mut_chance: f64) -> Caminho {
     if rand::thread_rng().gen::<f64>() < mut_chance {
-        // swap_vertices(caminho);
-        two_opt_aleatorio(caminho)
+        swap_vertices(caminho)
+        // two_opt_aleatorio(caminho)
     } else {
         caminho
     }

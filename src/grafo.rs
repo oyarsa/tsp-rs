@@ -26,6 +26,16 @@ impl Grafo {
     pub fn distancia(&self, src: Vertice, dst: Vertice) -> Peso {
         self.0[src][dst]
     }
+
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    pub fn toy() -> Grafo {
+        Grafo(vec![
+            vec![0, 1, 4, 2],
+            vec![1, 0, 2, 5],
+            vec![4, 2, 0, 3],
+            vec![2, 5, 3, 0]
+        ])
+    }
 }
 
 
@@ -35,31 +45,21 @@ pub struct Solucao {
     fo: Peso,
 }
 
-fn is_factivel(caminho: &Caminho) -> bool {
-    frequencias(caminho).iter().all(|&freq| freq == 1)
+fn is_factivel(c: &Caminho, num_vertices: usize) -> bool {
+    c.len() == num_vertices && frequencias(c).iter().all(|&n| n == 1)
 }
 
 fn frequencias(caminho: &Caminho) -> Vec<u64> {
-    let mut freq = vec![0u64; caminho.len()];
+    let mut freq = vec![0; caminho.len()];
     for &vert in caminho {
         freq[vert] += 1;
     }
     freq
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn toy() -> Grafo {
-    Grafo(vec![
-        vec![0, 1, 4, 2],
-        vec![1, 0, 2, 5],
-        vec![4, 2, 0, 3],
-        vec![2, 5, 3, 0]
-    ])
-}
-
 impl Solucao {
     fn calcula_fo(grafo: &Grafo, caminho: &Caminho) -> Peso {
-        if !is_factivel(caminho) {
+        if !is_factivel(caminho, grafo.num_vertices()) {
             return INF;
         }
         let inicio = caminho[0];
@@ -149,4 +149,30 @@ fn inv2perm(inv: &Caminho) -> Caminho {
         perm[pos[i]] = i;
     }
     perm
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fo_correta() {
+        let g = Grafo::toy();
+        let c = vec![0, 1, 2, 3];
+        assert_eq!(Solucao::calcula_fo(&g, &c), 8);
+    }
+
+    #[test]
+    fn fo_infactivel_vertice_repetido() {
+        let g = Grafo::toy();
+        let c = vec![0, 1, 2, 1];
+        assert_eq!(Solucao::calcula_fo(&g, &c), INF);
+    }
+
+    #[test]
+    fn fo_infactivel_vertice_faltando() {
+        let g = Grafo::toy();
+        let c = vec![0, 1, 2];
+        assert_eq!(Solucao::calcula_fo(&g, &c), INF);
+    }
 }

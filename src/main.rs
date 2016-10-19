@@ -52,7 +52,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let grafo: Grafo = match args.len() {
-        1 => grafo::toy(),
+        1 => Grafo::toy(),
         2 => grafo::grafo_from_arquivo(&args[1]),
         _ => {
             println!("Opções inválidas");
