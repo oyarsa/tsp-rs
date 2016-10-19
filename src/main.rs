@@ -11,14 +11,14 @@ use std::env;
 use std::process;
 use std::time::Instant;
 use grafo::{Grafo, INF};
-use grasp::GraspConfig;
+use grasp::Grasp;
 use ag::Ag;
 
 #[allow(dead_code)]
 fn teste_grasp(grafo: &Grafo) {
     println!("Grasp");
     let t = Instant::now();
-    let (solucao, it) = GraspConfig::new(grafo).max_iter(40).timeout(INF).build().solve();
+    let (solucao, it) = Grasp::new(grafo).max_iter(40).timeout(INF).solve();
     let tempo = t.elapsed();
 
     println!("Caminho: {:?}", solucao.caminho());
@@ -28,6 +28,7 @@ fn teste_grasp(grafo: &Grafo) {
     println!("-------------------\n");
 }
 
+#[allow(dead_code)]
 fn teste_ag(grafo: &Grafo) {
     println!("AG");
     let t = Instant::now();

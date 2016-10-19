@@ -9,6 +9,7 @@ use grafo;
 
 type Populacao = Vec<Solucao>;
 
+#[allow(dead_code)]
 pub fn solve(grafo: &Grafo,
              timeout: Duration,
              max_iter: u64,
@@ -41,6 +42,7 @@ pub fn solve(grafo: &Grafo,
     (pop.swap_remove(0), it_melhor)
 }
 
+#[allow(dead_code)]
 fn gen_roleta(pop: &Populacao) -> Vec<f32> {
     let total = pop.iter().map(|s| 1.0 / s.fo() as f32).sum::<f32>();
     pop.iter()
@@ -51,6 +53,7 @@ fn gen_roleta(pop: &Populacao) -> Vec<f32> {
         .collect()
 }
 
+#[allow(dead_code)]
 fn get_index_from_roleta(roleta: &[f32]) -> usize {
     let x = rand::thread_rng().next_f32();
     for (i, &prob) in roleta.iter().enumerate() {
@@ -61,6 +64,8 @@ fn get_index_from_roleta(roleta: &[f32]) -> usize {
     0
 }
 
+
+#[allow(dead_code)]
 fn selecao(pop: &Populacao, xo_num: usize) -> Vec<(&Solucao, &Solucao)> {
     let roleta = gen_roleta(pop);
     (0..xo_num)
@@ -72,6 +77,7 @@ fn selecao(pop: &Populacao, xo_num: usize) -> Vec<(&Solucao, &Solucao)> {
         .collect()
 }
 
+#[allow(dead_code)]
 fn proxima_geracao(atual: Populacao, filhos: Populacao, pop_tam: usize) -> Populacao {
     let mut proxima = atual;
     proxima.extend(filhos.into_iter());
@@ -80,12 +86,14 @@ fn proxima_geracao(atual: Populacao, filhos: Populacao, pop_tam: usize) -> Popul
     proxima
 }
 
+#[allow(dead_code)]
 fn populacao_inicial(grafo: &Grafo, pop_tam: usize) -> Populacao {
     let mut pop = (0..pop_tam).map(|_| individuo_aleatorio(grafo)).collect::<Vec<_>>();
     pop.sort_by_key(Solucao::fo);
     pop
 }
 
+#[allow(dead_code)]
 fn individuo_aleatorio(grafo: &Grafo) -> Solucao {
     loop {
         if let Some(caminho) = caminho_aleatorio(grafo) {
@@ -94,6 +102,7 @@ fn individuo_aleatorio(grafo: &Grafo) -> Solucao {
     }
 }
 
+#[allow(dead_code)]
 fn caminho_aleatorio(grafo: &Grafo) -> Option<Caminho> {
     let mut rng = rand::thread_rng();
     let num_vertices = grafo.num_vertices();
@@ -127,12 +136,14 @@ fn caminho_aleatorio(grafo: &Grafo) -> Option<Caminho> {
     Some(caminho)
 }
 
+#[allow(dead_code)]
 fn two_opt_aleatorio(mut caminho: Caminho) -> Caminho {
     let (i, k) = gen_points(caminho.len());
     caminho[i..k].reverse();
     caminho
 }
 
+#[allow(dead_code)]
 fn gen_points(num_vertices: usize) -> (Vertice, Vertice) {
     let mut rng = rand::thread_rng();
 
@@ -143,6 +154,7 @@ fn gen_points(num_vertices: usize) -> (Vertice, Vertice) {
     (min(i, j), max(i, j))
 }
 
+#[allow(dead_code)]
 fn gen_pmx_points(num_vertices: usize) -> (Vertice, Vertice) {
     let (mut i, mut j) = gen_points(num_vertices);
     if i == 0 {
@@ -197,6 +209,7 @@ fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
     Solucao::new(grafo, filho)
 }
 
+#[allow(dead_code)]
 fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
     let num_vertices = pai1.len();
 
@@ -227,6 +240,7 @@ fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
     filho.into_iter().map(|o| o.unwrap()).collect()
 }
 
+#[allow(dead_code)]
 fn recombinacao(grafo: &Grafo, pais: Vec<(&Solucao, &Solucao)>, mut_chance: f64) -> Populacao {
     pais.iter()
         .map(|&(pai1, pai2)| ordered_crossover(pai1.caminho(), pai2.caminho()))
@@ -244,6 +258,7 @@ fn swap_vertices(mut caminho: Caminho) -> Caminho {
     caminho
 }
 
+#[allow(dead_code)]
 fn mutacao(caminho: Caminho, mut_chance: f64) -> Caminho {
     if rand::thread_rng().gen::<f64>() < mut_chance {
         // swap_vertices(caminho);
@@ -263,6 +278,7 @@ pub struct Ag<'a> {
 }
 
 impl<'a> Ag<'a> {
+    #[allow(dead_code)]
     pub fn new(grafo: &Grafo) -> Ag {
         Ag {
             grafo: grafo,
@@ -274,6 +290,7 @@ impl<'a> Ag<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn solve(&self) -> (Solucao, u64) {
         solve(self.grafo,
               Duration::from_secs(self.timeout),
