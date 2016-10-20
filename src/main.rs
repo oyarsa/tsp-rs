@@ -13,6 +13,7 @@ use std::time::Instant;
 use grafo::{Grafo, INF};
 use grasp::Grasp;
 use ag::Ag;
+use std::collections::VecDeque;
 
 #[allow(dead_code)]
 fn teste_grasp(grafo: &Grafo) {
@@ -48,12 +49,39 @@ fn teste_ag(grafo: &Grafo) {
     println!("-------------------\n");
 }
 
+fn bfs(grafo: &Grafo, c: usize) -> Vec<usize> {
+    let mut dist = vec![None; grafo.num_vertices()];
+    let mut fila = VecDeque::new();
+
+    dist[c] = Some(0);
+    fila.push_back(c);
+
+    while !fila.is_empty() {
+        let i = fila.pop_front().unwrap();
+        for (j, &peso) in grafo.adjacentes(i) {
+            if peso != 0 && dist[j].is_none() {
+                dist[j] = dist[i].map(|d| d + 1);
+                fila.push_back(j);
+            }
+        }
+    }
+
+    dist.into_iter().map(|d| d.unwrap_or(grafo.num_vertices())).collect()
+}
+
+fn bfs_run() {
+    println!("Digite o tamanho da matriz, seguido por ela: ");
+    let g = Grafo::from_stdin();
+    let dist = bfs(&g, 3);
+    println!("{:?}", dist);
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     let grafo: Grafo = match args.len() {
         1 => Grafo::toy(),
-        2 => grafo::grafo_from_arquivo(&args[1]),
+        2 => Grafo::from_arquivo(&args[1]),
         _ => {
             println!("Opções inválidas");
             process::exit(1);
@@ -61,5 +89,6 @@ fn main() {
     };
 
     // teste_ag(&grafo);
-    teste_grasp(&grafo);
+    // teste_grasp(&grafo);
+    bfs_run();
 }

@@ -1,4 +1,6 @@
 use std::io::{BufRead, BufReader};
+use std::io;
+// use std::io::prelude::*;
 use std::path::Path;
 use std::fs::File;
 use std::iter::Enumerate;
@@ -12,6 +14,7 @@ pub type Vertice = usize;
 pub type Caminho = Vec<Vertice>;
 
 #[derive(Clone)]
+#[derive(Debug)]
 pub struct Grafo(Vec<Vec<Peso>>);
 
 impl Grafo {
@@ -35,6 +38,43 @@ impl Grafo {
             vec![4, 2, 0, 3],
             vec![2, 5, 3, 0]
         ])
+    }
+
+    #[allow(dead_code)]
+    pub fn from_stdin() -> Grafo {
+        let stdin = io::stdin();
+        let mut stdin = stdin.lock();
+        let mut buf = String::new();
+
+        stdin.read_line(&mut buf).expect("Unable to read number of vertexes");
+        let n = buf.trim().parse().unwrap_or(0);
+
+        let x: Vec<Vec<u64>> = stdin.lines()
+            .take(n)
+            .map(|l| {
+                l.expect("Failed to read line")
+                    .split_whitespace()
+                    .take(n)
+                    .map(|n| n.parse().unwrap_or(0))
+                    .collect()
+            })
+            .collect();
+
+        Grafo(x)
+    }
+
+    pub fn from_arquivo(file: &str) -> Grafo {
+        let path = Path::new(file);
+        let file = BufReader::new(File::open(&path).expect("Failed to open file"));
+
+        Grafo(file.lines()
+            .map(|l| {
+                l.expect("Failed to read line")
+                    .split_whitespace()
+                    .map(|number| number.parse().unwrap_or(INF))
+                    .collect()
+            })
+            .collect())
     }
 }
 
@@ -92,20 +132,6 @@ impl Solucao {
     pub fn fo(&self) -> Peso {
         self.fo
     }
-}
-
-pub fn grafo_from_arquivo(file: &str) -> Grafo {
-    let path = Path::new(file);
-    let file = BufReader::new(File::open(&path).expect("Failed to open file"));
-
-    Grafo(file.lines()
-        .map(|l| {
-            l.expect("Failed to read line")
-                .split_whitespace()
-                .map(|number| number.parse().unwrap_or(INF))
-                .collect()
-        })
-        .collect())
 }
 
 #[allow(dead_code)]
