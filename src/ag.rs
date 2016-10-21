@@ -192,7 +192,7 @@ fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
         let mut idx = i;
         while idx >= xbegin && idx <= xend {
             let v = pai1[idx];
-            idx = pai2.iter().position(|&x| x == v).unwrap();
+            idx = pai2.iter().position(|&x| x == v).expect("Erro no PMX: Loop");
             println!("{} - {}: {}/{}", xbegin, xend, v, idx);
             println!("pai1: {:?}", pai1);
             println!("pai2: {:?}", pai2);
@@ -207,7 +207,7 @@ fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
         }
     }
 
-    let filho = filho.into_iter().map(|o| o.unwrap()).collect();
+    let filho = filho.into_iter().map(|o| o.expect("Erro no PMX: Final")).collect();
     Solucao::new(grafo, filho)
 }
 
@@ -239,7 +239,7 @@ fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
         }
     }
 
-    filho.into_iter().map(|o| o.unwrap()).collect()
+    filho.into_iter().map(|o| o.expect("Erro no OX")).collect()
 }
 
 #[allow(dead_code)]

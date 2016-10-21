@@ -56,7 +56,7 @@ impl Grafo {
                 l.expect("Failed to read line")
                     .split_whitespace()
                     .take(n)
-                    .map(|n| n.parse().unwrap_or(0))
+                    .map(|x| x.parse().unwrap_or(0))
                     .collect()
             })
             .collect();
@@ -186,8 +186,7 @@ pub fn bfs_distancia(grafo: &Grafo, c: usize) -> Vec<usize> {
     dist[c] = Some(0);
     fila.push_back(c);
 
-    while !fila.is_empty() {
-        let i = fila.pop_front().unwrap();
+    while let Some(i) = fila.pop_front() {
         for (j, &peso) in grafo.adjacentes(i) {
             if peso != 0 && dist[j].is_none() {
                 dist[j] = dist[i].map(|d| d + 1);
