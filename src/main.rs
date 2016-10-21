@@ -48,6 +48,7 @@ fn teste_ag(grafo: &Grafo) {
     println!("-------------------\n");
 }
 
+#[allow(dead_code)]
 fn bfs_run() {
     println!("Digite o tamanho da matriz, seguido por ela: ");
     let g = Grafo::from_stdin();

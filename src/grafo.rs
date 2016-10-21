@@ -178,6 +178,7 @@ fn inv2perm(inv: &Caminho) -> Caminho {
     perm
 }
 
+#[allow(dead_code)]
 pub fn bfs_distancia(grafo: &Grafo, c: usize) -> Vec<usize> {
     let mut dist = vec![None; grafo.num_vertices()];
     let mut fila = VecDeque::new();

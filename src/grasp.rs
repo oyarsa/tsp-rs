@@ -148,25 +148,25 @@ impl<'a> Grasp<'a> {
     }
 
     #[allow(dead_code)]
-    pub fn alfa(mut self, alfa: f64) -> Grasp<'a> {
+    pub fn alfa(&mut self, alfa: f64) -> &mut Grasp<'a> {
         self.alfa = alfa;
         self
     }
 
     #[allow(dead_code)]
-    pub fn timeout(mut self, timeout: u64) -> Grasp<'a> {
+    pub fn timeout(&mut self, timeout: u64) -> &mut Grasp<'a> {
         self.timeout = timeout;
         self
     }
 
     #[allow(dead_code)]
-    pub fn num_vizinhos(mut self, num_vizinhos: u32) -> Grasp<'a> {
+    pub fn num_vizinhos(&mut self, num_vizinhos: u32) -> &mut Grasp<'a> {
         self.num_vizinhos = num_vizinhos;
         self
     }
 
     #[allow(dead_code)]
-    pub fn max_iter(mut self, max_iter: u64) -> Grasp<'a> {
+    pub fn max_iter(&mut self, max_iter: u64) -> &mut Grasp<'a> {
         self.max_iter = max_iter;
         self
     }

@@ -303,31 +303,31 @@ impl<'a> Ag<'a> {
     }
 
     #[allow(dead_code)]
-    pub fn timeout(mut self, timeout: u64) -> Ag<'a> {
+    pub fn timeout(&mut self, timeout: u64) -> &mut Ag<'a> {
         self.timeout = timeout;
         self
     }
 
     #[allow(dead_code)]
-    pub fn max_iter(mut self, max_iter: u64) -> Ag<'a> {
+    pub fn max_iter(&mut self, max_iter: u64) -> &mut Ag<'a> {
         self.max_iter = max_iter;
         self
     }
 
     #[allow(dead_code)]
-    pub fn pop_tam(mut self, pop_tam: usize) -> Ag<'a> {
+    pub fn pop_tam(&mut self, pop_tam: usize) -> &mut Ag<'a> {
         self.pop_tam = pop_tam;
         self
     }
 
     #[allow(dead_code)]
-    pub fn xo_chance(mut self, xo_chance: f64) -> Ag<'a> {
+    pub fn xo_chance(&mut self, xo_chance: f64) -> &mut Ag<'a> {
         self.xo_chance = xo_chance;
         self
     }
 
     #[allow(dead_code)]
-    pub fn mut_chance(mut self, mut_chance: f64) -> Ag<'a> {
+    pub fn mut_chance(&mut self, mut_chance: f64) -> &mut Ag<'a> {
         self.mut_chance = mut_chance;
         self
     }
