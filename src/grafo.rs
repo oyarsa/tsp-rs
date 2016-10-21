@@ -5,6 +5,7 @@ use std::path::Path;
 use std::fs::File;
 use std::iter::Enumerate;
 use std::slice::Iter;
+use std::collections::VecDeque;
 
 pub const INF: u64 = 1e9 as u64;
 
@@ -175,6 +176,26 @@ fn inv2perm(inv: &Caminho) -> Caminho {
         perm[pos[i]] = i;
     }
     perm
+}
+
+pub fn bfs_distancia(grafo: &Grafo, c: usize) -> Vec<usize> {
+    let mut dist = vec![None; grafo.num_vertices()];
+    let mut fila = VecDeque::new();
+
+    dist[c] = Some(0);
+    fila.push_back(c);
+
+    while !fila.is_empty() {
+        let i = fila.pop_front().unwrap();
+        for (j, &peso) in grafo.adjacentes(i) {
+            if peso != 0 && dist[j].is_none() {
+                dist[j] = dist[i].map(|d| d + 1);
+                fila.push_back(j);
+            }
+        }
+    }
+
+    dist.into_iter().map(|d| d.unwrap_or(grafo.num_vertices())).collect()
 }
 
 #[cfg(test)]
