@@ -33,7 +33,7 @@ fn teste_ag(grafo: &Grafo) {
     println!("AG");
     let t = Instant::now();
     let (solucao, it) = Ag::new(grafo)
-        .max_iter(100)
+        .max_iter(500)
         .timeout(INF)
         .mut_chance(0.3)
         .pop_tam(1000)
@@ -68,7 +68,7 @@ fn main() {
         }
     };
 
-    // teste_ag(&grafo);
-    teste_grasp(&grafo);
+    teste_ag(&grafo);
+    // teste_grasp(&grafo);
     // bfs_run();
 }

@@ -211,6 +211,28 @@ fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
     Solucao::new(grafo, filho)
 }
 
+fn pmx2_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
+    let num_vertices = pai1.len();
+
+    let mut genes = pai1.clone();
+    let mut map = vec![0; num_vertices + 1];
+    let (xbegin, xend) = gen_points(num_vertices);
+
+    for (i, vert) in genes.iter().enumerate() {
+        map[*vert] = i;
+    }
+
+    for i in xbegin..xend {
+        let value = pai2[i];
+        genes.swap(i, map[value]);
+
+        let idx = map[value];
+        map.swap(genes[idx], genes[i]);
+    }
+
+    genes;
+}
+
 #[allow(dead_code)]
 fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
     let num_vertices = pai1.len();
@@ -245,9 +267,9 @@ fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
 #[allow(dead_code)]
 fn recombinacao(grafo: &Grafo, pais: Vec<(&Caminho, &Caminho)>, mut_chance: f64) -> Populacao {
     pais.iter()
-        .map(|&(pai1, pai2)| ordered_crossover(pai1, pai2))
+        .map(|&(pai1, pai2)| pmx2_crossover(pai1, pai2))
         .chain(pais.iter()
-            .map(|&(pai2, pai1)| ordered_crossover(pai2, pai1)))
+            .map(|&(pai2, pai1)| pmx2_crossover(pai2, pai1)))
         .map(|c| mutacao(c, mut_chance))
         .map(|c| Solucao::new(grafo, c))
         .collect()
