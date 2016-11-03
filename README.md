@@ -8,10 +8,10 @@ a resolução do TSP.
 ### Algoritmos implementados
 - GRASP:
     - Construção: vizinho mais próximo semi-guloso
-    - Busca local: first-improvement hill climbing com 2-opt
-
-### Como usar
-O programa recebe um arquivo de texto como parâmetro da linha de comando. Este
-arquivo deve ser a matriz de distâncias do grafo, propriamente formatada.
-Se nenhum arquivo for fornecido, o algoritmo executa o GRASP em uma pequena
-instância de testes.
+    - Busca local: best-improvement hill climbing com 2-opt
+- AG:
+    - População inicial: caminhos aleatórios
+    - Seleção: roleta simples
+    - Cruzamento: PMX e OX
+    - Mutação: 2-opt aleatório e swap
+    - Próxima geração: elitismo
