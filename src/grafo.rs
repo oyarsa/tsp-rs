@@ -87,7 +87,7 @@ pub struct Solucao {
 }
 
 fn is_factivel(c: &Caminho, num_vertices: usize) -> bool {
-    c.len() == num_vertices && frequencias(c).iter().all(|&n| n == 1)
+    c.len() == num_vertices && frequencias(c).into_iter().all(|n| n == 1)
 }
 
 fn frequencias(caminho: &Caminho) -> Vec<u64> {
@@ -104,7 +104,7 @@ impl Solucao {
             return INF;
         }
         let inicio = caminho[0];
-        let fim = caminho[caminho.len() - 1];
+        let fim = caminho[grafo.num_vertices() - 1];
         caminho.iter()
             .zip(&caminho[1..])
             .map(|(&src, &dst)| grafo.distancia(src, dst))

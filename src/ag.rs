@@ -1,9 +1,11 @@
 extern crate rand;
+extern crate rayon;
 
 use std::u64;
 use std::time::{Duration, Instant};
-use self::rand::{Rng, sample};
 use std::cmp::{min, max};
+use self::rand::{Rng, sample};
+use self::rayon::prelude::*;
 use grafo::{Solucao, Grafo, Caminho, Vertice};
 use grafo;
 
@@ -74,9 +76,12 @@ fn seleciona_pais<'a>(pop: &'a Populacao, roleta: &[f32]) -> (&'a Caminho, &'a C
 #[allow(dead_code)]
 fn selecao(pop: &Populacao, xo_num: usize) -> Vec<(&Caminho, &Caminho)> {
     let roleta = gen_roleta(pop);
+    let mut pais = Vec::with_capacity(xo_num);
     (0..xo_num)
+        .into_par_iter()
         .map(|_| seleciona_pais(pop, &roleta))
-        .collect()
+        .collect_into(&mut pais);
+    pais
 }
 
 #[allow(dead_code)]
@@ -149,77 +154,21 @@ fn two_opt_aleatorio(mut caminho: Caminho) -> Caminho {
 fn gen_points(num_vertices: usize) -> (Vertice, Vertice) {
     let mut rng = rand::thread_rng();
 
-    let r = sample(&mut rng, 0..num_vertices, 2);
-    let i = r[0];
-    let j = r[1];
+    let i = rng.gen::<Vertice>() % num_vertices;
+    let j = rng.gen::<Vertice>() % num_vertices;
 
     (min(i, j), max(i, j))
 }
 
-#[allow(dead_code)]
-fn gen_pmx_points(num_vertices: usize) -> (Vertice, Vertice) {
-    let (mut i, mut j) = gen_points(num_vertices);
-    if i == 0 {
-        i = 1;
-    }
-    if j == num_vertices - 1 {
-        j -= 1;
-    }
-    (i, j)
-}
-
-#[allow(dead_code)]
-fn pmx_crossover(grafo: &Grafo, pai1: &Caminho, pai2: &Caminho) -> Solucao {
-    let num_vertices = grafo.num_vertices();
-
-    let mut filho = vec![None; num_vertices];
-    let mut marcados = vec![false; num_vertices];
-    let (xbegin, xend) = gen_pmx_points(num_vertices);
-
-    for i in xbegin..xend {
-        filho[i] = Some(pai1[i]);
-        marcados[pai1[i]] = true;
-    }
-
-    #[allow(needless_range_loop)]
-    for i in xbegin..xend {
-        let val = pai2[i];
-
-        if marcados[val] {
-            continue;
-        }
-
-        let mut idx = i;
-        while idx >= xbegin && idx <= xend {
-            let v = pai1[idx];
-            idx = pai2.iter().position(|&x| x == v).expect("Erro no PMX: Loop");
-            println!("{} - {}: {}/{}", xbegin, xend, v, idx);
-            println!("pai1: {:?}", pai1);
-            println!("pai2: {:?}", pai2);
-        }
-
-        filho[idx] = Some(val);
-    }
-
-    for (i, vert) in filho.iter_mut().enumerate() {
-        if vert.is_none() {
-            *vert = Some(pai2[i]);
-        }
-    }
-
-    let filho = filho.into_iter().map(|o| o.expect("Erro no PMX: Final")).collect();
-    Solucao::new(grafo, filho)
-}
-
-fn pmx2_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
+fn pmx_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
     let num_vertices = pai1.len();
 
     let mut genes = pai1.clone();
     let mut map = vec![0; num_vertices + 1];
     let (xbegin, xend) = gen_points(num_vertices);
 
-    for (i, vert) in genes.iter().enumerate() {
-        map[*vert] = i;
+    for (i, &vert) in genes.iter().enumerate() {
+        map[vert] = i;
     }
 
     for i in xbegin..xend {
@@ -230,7 +179,7 @@ fn pmx2_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
         map.swap(genes[idx], genes[i]);
     }
 
-    genes;
+    genes
 }
 
 #[allow(dead_code)]
@@ -266,13 +215,15 @@ fn ordered_crossover(pai1: &Caminho, pai2: &Caminho) -> Caminho {
 
 #[allow(dead_code)]
 fn recombinacao(grafo: &Grafo, pais: Vec<(&Caminho, &Caminho)>, mut_chance: f64) -> Populacao {
-    pais.iter()
-        .map(|&(pai1, pai2)| pmx2_crossover(pai1, pai2))
-        .chain(pais.iter()
-            .map(|&(pai2, pai1)| pmx2_crossover(pai2, pai1)))
+    let mut filhos = Vec::with_capacity(pais.len() * 2);
+    pais.par_iter()
+        .map(|&(pai1, pai2)| pmx_crossover(pai1, pai2))
+        .chain(pais.par_iter()
+            .map(|&(pai2, pai1)| pmx_crossover(pai2, pai1)))
         .map(|c| mutacao(c, mut_chance))
         .map(|c| Solucao::new(grafo, c))
-        .collect()
+        .collect_into(&mut filhos);
+    filhos
 }
 
 #[allow(dead_code)]
