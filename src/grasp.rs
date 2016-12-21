@@ -7,9 +7,9 @@ use grafo::{Solucao, Grafo, Caminho, Vertice};
 
 #[allow(dead_code)]
 pub fn solve(grafo: &Grafo,
-             alfa: f64,
-             timeout: Duration,
-             num_vizinhos: u32,
+             alfa: f64, // 0.3 0.5 0.7
+             timeout: Duration, // 30s
+             num_vizinhos: u32, // 5 10 15
              max_iter: u64)
              -> (Solucao, u64) {
     let mut rng = rand::weak_rng();

@@ -13,11 +13,14 @@ type Populacao = Vec<Solucao>;
 
 #[allow(dead_code)]
 pub fn solve(grafo: &Grafo,
-             timeout: Duration,
-             max_iter: u64,
-             pop_tam: usize,
-             xo_chance: f64,
-             mut_chance: f64)
+             timeout: Duration, // 30s
+             max_iter: u64, // INF
+             pop_tam: usize, // 250, 500, 1000
+             xo_chance: f64, // 0.95, 0.99
+             // metodo de cruzamento: OX, PMX
+             // método de mutação: Swap, 2-opt
+             // método de seleção: Torneio-2, Torneio-4, Roleta
+             mut_chance: f64 /* 0.05 0.10 0.20 */)
              -> (Solucao, u64) {
     let mut pop = populacao_inicial(grafo, pop_tam);
     let mut best_fo = pop[0].fo();
